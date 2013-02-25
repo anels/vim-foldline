@@ -1,3 +1,7 @@
+" let g:FoldLine_Enable = 1
+let g:FoldLine_MaxFoldTextLength = 40
+let g:FoldLine_Trial = '...'
+
 " Base {{{
 function Foldtext_base(...)
     " use the argument for display if possible, otherwise the current line {{{
@@ -33,6 +37,13 @@ function Foldtext_base(...)
     " remove any remaining leading or trailing whitespace {{{
     let line = substitute(line, '^\s*\(.\{-}\)\s*$', '\1', '')
     " }}}
+    " remove text if it exceeds the maximal length {{{
+    if (strlen(line) > g:FoldLine_MaxFoldTextLength)
+      let line = strpart(line, 0, g:FoldLine_MaxFoldTextLength)
+      let line = strpart(line, 0, strridx(line, " "))
+      let line = line . g:FoldLine_Trial
+    endif
+    " }}}
     " align everything, and pad the end of the display with - {{{
     let alignment = &columns - 18 - v:foldlevel
     let line = strpart(printf('%-' . alignment . 's', line), 0, alignment)
@@ -41,7 +52,7 @@ function Foldtext_base(...)
     " format the line count {{{
     let cnt = printf('%13s', '(' . (v:foldend - v:foldstart + 1) . ' lines) ')
     " }}}
-    return '+-' . v:folddashes . ' ' . line . cnt
+    return '+-' . cnt . ">> " . line . v:folddashes . ' '
 endfunction
 " }}}
 " Latex {{{
@@ -205,7 +216,9 @@ function Foldtext_cpp()
 endfunction
 " }}}
 
-if exists("g:Foldtext_enable") && g:Foldtext_enable
+set foldtext=Foldtext_base()
+
+if exists("g:FoldLine_enable") && g:FoldLine_enable
     set foldtext=Foldtext_base()
 endif
 if exists("g:Foldtext_tex_enable") && g:Foldtext_tex_enable
