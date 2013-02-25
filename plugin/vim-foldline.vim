@@ -2,6 +2,16 @@
 let g:FoldLine_MaxFoldTextLength = 40
 let g:FoldLine_Trial = '...'
 
+function FoldLine_truncateText(text) " {{{
+  let text = a:text
+  if (strlen(text) > g:FoldLine_MaxFoldTextLength)
+    let text = strpart(text, 0, g:FoldLine_MaxFoldTextLength)
+    let text = strpart(text, 0, strridx(line, " "))
+    let text = text . g:FoldLine_Trial
+  endif
+  return text
+endfunction " }}}
+
 " Base {{{
 function Foldtext_base(...)
     " use the argument for display if possible, otherwise the current line {{{
@@ -37,12 +47,8 @@ function Foldtext_base(...)
     " remove any remaining leading or trailing whitespace {{{
     let line = substitute(line, '^\s*\(.\{-}\)\s*$', '\1', '')
     " }}}
-    " remove text if it exceeds the maximal length {{{
-    if (strlen(line) > g:FoldLine_MaxFoldTextLength)
-      let line = strpart(line, 0, g:FoldLine_MaxFoldTextLength)
-      let line = strpart(line, 0, strridx(line, " "))
-      let line = line . g:FoldLine_Trial
-    endif
+    " Truncate text if it exceeds the maximal length {{{
+    let line = FoldLine_truncateText(line)
     " }}}
     " align everything, and pad the end of the display with - {{{
     let alignment = &columns - 18 - v:foldlevel
@@ -50,11 +56,12 @@ function Foldtext_base(...)
     let line = substitute(line, '\%( \)\@<= \%( *$\)\@=', '-', 'g')
     " }}}
     " format the line count {{{
-    let cnt = printf('%13s', '(' . (v:foldend - v:foldstart + 1) . ' lines) ')
+    let cnt = printf('%12s', '(' . (v:foldend - v:foldstart + 1) . ' lines)')
     " }}}
-    return '+-' . cnt . ">> " . line . v:folddashes . ' '
+    return '+-' . cnt . " >> " . line . v:folddashes . ' '
 endfunction
 " }}}
+
 " Latex {{{
 let s:latex_types = {'thm': 'Theorem', 'cor':  'Corollary',
                    \ 'lem': 'Lemma',   'defn': 'Definition'}
