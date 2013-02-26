@@ -12,6 +12,19 @@ function FoldLine_truncateText(text) " {{{
   return text
 endfunction " }}}
 
+" Returns a copy of the string, with leading and trailing whitespace omitted.
+function FoldLine_trim(text) " {{{
+  let text = substitute(a:text, '^\s*\(.\{-}\)\s*$', '\1', '')
+  return text
+endfunction " }}}
+
+" {{{
+" I'm a xxx.
+"
+"
+" }}}
+
+
 " Base {{{
 function Foldtext_base(...)
     " use the argument for display if possible, otherwise the current line {{{
@@ -44,9 +57,11 @@ function Foldtext_base(...)
         endif
     endif
     " }}}
-    " remove any remaining leading or trailing whitespace {{{
-    let line = substitute(line, '^\s*\(.\{-}\)\s*$', '\1', '')
-    " }}}
+    let line = FoldLine_trim(line)
+    if(strlen(line) == 0)
+      let line = getline(v:foldstart + 1)
+      let line = FoldLine_trim(line)
+    endif
     " Truncate text if it exceeds the maximal length {{{
     let line = FoldLine_truncateText(line)
     " }}}
@@ -209,6 +224,7 @@ function Foldtext_latex() " {{{
     return Foldtext_base(line)
 endfunction " }}}
 " }}}
+
 " C++ {{{
 function Foldtext_cpp()
     let line = getline(v:foldstart)
